@@ -1117,7 +1117,7 @@ html:not(.watch-active-state) .button.btn_login.button-fill:active{
 		}
 		.position_bottom .address p{
 			line-height: 1.2;
-		    width: calc(100% - 62px);
+		    /* width: calc(100% - 62px); */
 		    display: inline-block;
 		    vertical-align: top;
 		    overflow: hidden;    
