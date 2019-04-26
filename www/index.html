@@ -4,12 +4,13 @@
     <!-- Required meta tags-->
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no, minimal-ui">
-
+    <!-- <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, target-densitydpi=medium-dpi, user-scalable=0" /> -->
+<!--     <meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width, height=device-height" /> -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <!-- Color theme for statusbar -->
     <!-- <meta name="theme-color" content="#2196f3"> -->
     <!-- Your app title -->
-    <title>On-TrackGPS Live</title>
+    <title>OnTrackGPS</title>
 
     <!-- Cropper Camer -->
     <link rel="stylesheet" href="resources/plugins/cropper/css/cropper.min.css" type="text/css" charset="utf-8"/>
@@ -68,7 +69,7 @@
                       </div>
                     </li> 
                     <li class="forget_pwd_wrapper">       
-                      <a href="resources/templates/forgotPwd.html" class="color-black forgetPwd ">{{@global.LANGUAGE.LOGIN_MSG05}}</a>          
+                      <a href="resources/templates/forgotPwd.html" class="color-white forgetPwd ">{{@global.LANGUAGE.LOGIN_MSG05}}</a>          
                     </li>             
                   </ul>
                 </div>          
@@ -98,7 +99,7 @@
               <ul>
                 <li class="item-content list-panel-all close-panel item-link" id="menuHome">
                   <div class="item-media">                
-                    <i class="f7-icons color-dealer icon-menu-home"></i>
+                    <i class="f7-icons icon-menu-home color-dealer"></i>
                   </div>
                   <div class="item-inner">
                     <div class="item-title">{{@global.LANGUAGE.MENU_MSG00}}</div>
@@ -106,7 +107,7 @@
                 </li> 
                 <li class="item-content list-panel-all close-panel item-link" id="menuGeofence">
                   <div class="item-media">
-                    <i class="f7-icons color-dealer icon-menu-geofence"></i>
+                    <i class="f7-icons icon-menu-geofence color-dealer"></i>
                   </div>
                   <div class="item-inner">
                     <div class="item-title">{{@global.LANGUAGE.MENU_MSG01}}</div>
@@ -114,31 +115,40 @@
                 </li>  
                 <li class="item-content list-panel-all close-panel item-link" id="menuAlarms">
                     <div class="item-media">
-                        <i class="f7-icons color-dealer icon-menu-alarms"></i>
+                        <i class="f7-icons icon-menu-alarms color-dealer"></i>
                     </div>
                     <div class="item-inner">
                         <div class="item-title">{{@global.LANGUAGE.ALARM_MSG06}}</div>
                     </div>
                 </li>  
-                <!-- <li class="item-content list-panel-all close-panel item-link" id="menuRecharge">
-                         <div class="item-media">
-                           <i class="f7-icons color-dealer icon-menu-recharge"></i>
-                         </div>
-                         <div class="item-inner">
-                           <div class="item-title">{{@global.LANGUAGE.MENU_MSG02}}</div>
-                         </div>
-                       </li> -->       
+                <li class="item-content list-panel-all close-panel item-link" id="menuRecharge">
+                  <div class="item-media">
+                    <i class="f7-icons icon-menu-recharge color-dealer"></i>
+                  </div>
+                  <div class="item-inner">
+                    <div class="item-title">{{@global.LANGUAGE.MENU_MSG02}}</div>
+                  </div>
+                </li>       
                 <li class="item-content list-panel-all close-panel item-link" id="menuProfile">
                   <div class="item-media">
-                    <i class="f7-icons color-dealer icon-menu-profile"></i>
+                    <i class="f7-icons icon-menu-profile color-dealer"></i>
                   </div>
                   <div class="item-inner">
                     <div class="item-title">{{@global.LANGUAGE.MENU_MSG03}}</div>
                   </div>
-                </li>  
+                </li> 
+                <li class="item-content list-panel-all close-panel item-link" id="menuUserGuide">
+                    <div class="item-media">
+                        <i class="f7-icons icon-other-user-manual color-dealer"></i>
+                    </div>
+                    <div class="item-inner">
+                        <div class="item-title">{{@global.LANGUAGE.MENU_MSG07}}</div>
+                    </div>
+                </li> 
+            
                 <li class="item-content list-panel-all close-panel item-link" id="menuSupport">
                     <div class="item-media">
-                        <i class="f7-icons color-dealer icon-menu-support"></i>
+                        <i class="f7-icons icon-menu-support color-dealer"></i>
                     </div>
                     <div class="item-inner">
                         <div class="item-title">{{@global.LANGUAGE.MENU_MSG06}}</div>
@@ -147,7 +157,7 @@
                                  
                 <li class="item-content list-panel-all close-panel" id="menuLogout"> 
                   <div class="item-media">
-                    <i class="f7-icons color-dealer icon-menu-logout"></i>
+                    <i class="f7-icons icon-menu-logout color-dealer"></i>
                   </div>
                   <div class="item-inner">
                     <div class="item-title">{{@global.LANGUAGE.MENU_MSG04}}</div>
@@ -156,9 +166,12 @@
               </ul>
             </div>
           </div>
-          <!-- <div class="menu_remainings">
-            {{@global.LANGUAGE.COM_MSG32}}: <span class="remaining_counter">---</span>
-          </div> -->
+          <div class="menu_bottom">
+            <div class="menu_remainings">
+              {{@global.LANGUAGE.COM_MSG32}}: <span class="remaining_counter">---</span>
+            </div>
+          </div>
+            
         </div>
       </div>
     </script>
@@ -176,15 +189,16 @@
                     <div data-page="index" class="page bg-color-page">
            
                       <!-- Top Navbar. In Material theme it should be inside of the page-->
-                        <div class="navbar color-white ">
+                        <div class="navbar  ">
                             <div class="navbar-inner">
                                 <div class="left">
-                                    <a href="#" class="link icon-only open-panel"> <i class="f7-icons icon-header-menu"></i></a>
+                                    <a href="#" class="link icon-only open-panel "> <i class="f7-icons icon-header-menu"></i></a>
                                 </div>
                                 <div class="left navbar_title_index">{{@global.LANGUAGE.MENU_MSG00}}</div>
                                 <div class="right">
                                     <!-- <a href="#" class="link button_search" ><i class="f7-icons">search</i></a> -->
                                     <!-- <a href="#" class="link open-panel notification_button new_not" data-panel="right" ><i class="f7-icons">bell</i></a> -->
+                                    <a href="#" class="link sorting_button" ><i class="f7-icons icon-other-sort"></i></a> 
                                     <a href="#" class="link notification_button" ><i class="f7-icons icon-header-alarm"></i></a>
                                 </div>
                             </div>
@@ -202,7 +216,7 @@
                         <div class="page-content">
                             <!-- Search Bar -->
                             
-                            <div class="content-block index-search-nothing-found searchbar-not-found">                               
+                            <div class="content-block index-search-nothing-found searchbar-not-found color-white">                               
                                 {{@global.LANGUAGE.COM_MSG05}}
                             </div>
                             <div class="list-block media-list no-hairlines no-hairlines-between virtual-list list-block-search assets_list" > 
@@ -222,7 +236,7 @@
     <script type="text/javascript" src="resources/libraries/framework7/js/framework7.min.js"></script>
      <!-- jquery libraries -->
     <script type="text/javascript" src="resources/libraries/jquery/jqury-2.2.4.min.js"></script>
-<!--     <script type="text/javascript" src="resources/libraries/jquery/jquery.signalR-2.2.0.min.js"></script> -->
+    <script type="text/javascript" src="resources/libraries/jquery/jquery.signalR-2.2.0.min.js"></script>
     <!-- Path to leaflet Library JS-->
     <script type="text/javascript" src="resources/libraries/leaflet/leaflet.js"></script>
     <!-- Moment -->
@@ -244,8 +258,8 @@
     <script type="text/javascript" src="resources/app/helper.js" ></script>
     <script type="text/javascript" src="resources/app/ProtocolHelpers.js" ></script>
     <script type="text/javascript" src="resources/app/languages.js" ></script>
-<!--     <script type="text/javascript" src="resources/app/hubs.js"></script>
-<script type="text/javascript" src="resources/app/HubPlus.js" ></script> -->
+    <script type="text/javascript" src="resources/app/hubs.js"></script>
+    <script type="text/javascript" src="resources/app/HubPlus.js" ></script>
     <script type="text/javascript" src="resources/app/my-app.js?version=0.2"></script>
 
     

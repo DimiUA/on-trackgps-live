@@ -2,6 +2,7 @@ $hub = null;
 window.NULL = null;
 window.COM_TIMEFORMAT = 'YYYY-MM-DD HH:mm:ss';
 window.COM_TIMEFORMAT2 = 'YYYY-MM-DDTHH:mm:ss';
+window.COM_TIMEFORMAT3 = 'YYYY-MM-DDTHH:MM';
 function setUserinfo(user){localStorage.setItem("COM.QUIKTRAK.LIVE.USERINFO", JSON.stringify(user));}
 function getUserinfo(){var ret = {};var str = localStorage.getItem("COM.QUIKTRAK.LIVE.USERINFO");if(str) {ret = JSON.parse(str);} return ret;}
 function isJsonString(str){try{var ret=JSON.parse(str);}catch(e){return false;}return ret;}
@@ -33,7 +34,7 @@ function getPlusInfo(){
             localStorage.PUSH_DEVICE_TOKEN = uid;
             //localStorage.PUSH_DEVICE_TOKEN = "75ba1639-92ae-0c4c-d423-4fad1e48a49d"
         localStorage.PUSH_APPID_ID = 'webapp';
-        localStorage.DEVICE_TYPE = "web";        
+        localStorage.DEVICE_TYPE = "webapp";        
     }
 }
 
@@ -47,6 +48,15 @@ var loginInterval = null;
 var pushConfigRetryMax = 40;
 var pushConfigRetry = 0;
 
+var push = null;
+var AppDetails = {
+    name: 'On-TrackGPS-Live-app',
+    code: 7,
+    supportCode: 16,
+    appId: '',
+    appleId: '1269018607',
+};
+
 if( navigator.userAgent.match(/Windows/i) ){    
     inBrowser = 1;
 }
@@ -55,6 +65,8 @@ document.addEventListener("deviceready", onDeviceReady, false );
 
 //function onPlusReady(){   
 function onDeviceReady(){ 
+    AppDetails.appId = BuildInfo.packageName;
+
     //fix app images and text size
     if (window.MobileAccessibility) {
         window.MobileAccessibility.usePreferredTextZoom(false);    
@@ -85,7 +97,7 @@ function onDeviceReady(){
 }
 
 function setupPush(){
-        var push = PushNotification.init({
+        push = PushNotification.init({
             "android": {
                 //"senderID": "264121929701"                             
             },
@@ -131,8 +143,8 @@ function setupPush(){
             }
             else if (data && data.additionalData && data.additionalData.payload){
                //if user NOT using app and push notification comes
-               App.showIndicator();
-               
+                
+                App.showIndicator();
                 loginTimer = setInterval(function() {
                     //alert(localStorage.loginDone);
                     if (localStorage.loginDone) {
@@ -140,7 +152,7 @@ function setupPush(){
                         setTimeout(function(){
                             //alert('before processClickOnPushNotification');
                             processClickOnPushNotification([data.additionalData.payload]);
-                            App.hideIndicator();          
+                            App.hideIndicator();               
                         },1000); 
                     }
                 }, 1000); 
@@ -159,6 +171,7 @@ function setupPush(){
                     data.additionalData.notId
                 );
             }
+            
                 
         });
 
@@ -174,6 +187,8 @@ function setupPush(){
         }
 }
 
+
+
 function onAppPause(){ 
     
 } 
@@ -182,7 +197,6 @@ function onAppResume(){
         getNewNotifications(); 
         getNewData();
     }
-   
     
 }  
 
@@ -200,7 +214,6 @@ function backFix(event){
 }
 
 
-
 // Initialize your app
 var App = new Framework7({
     swipePanel: 'left',   
@@ -209,7 +222,7 @@ var App = new Framework7({
     //pushState: true,       
     allowDuplicateUrls: true,    
     sortable: false,    
-    modalTitle: 'On-TrackGPS Live',
+    modalTitle: 'OnTrackGPS',
     precompileTemplates: true,
     template7Pages: true,
     onAjaxStart: function(xhr){
@@ -229,11 +242,11 @@ var mainView = App.addView('.view-main', {
     swipeBackPage: false
 });
 
-var AppDetails = {
-    name: 'On-TrackGPS-Live-app',
-    code: 7,
-    supportCode: 16,
-};
+/*var AppDetails = {
+    name: 'QuikTrak-app',
+    code: 23,
+    supportCode: 3,
+};*/
 
 window.PosMarker = {};
 var MapTrack = null;
@@ -298,15 +311,20 @@ API_URL.URL_GEOFENCE_DELETE = API_DOMIAN1 + "Device/FenceDelete";
 API_URL.URL_GET_GEOFENCE_ASSET_LIST = API_DOMIAN1 + "Device/GetFenceAssetList";
 API_URL.URL_PHOTO_UPLOAD = "http://upload.quiktrak.co/image/Upload";
 API_URL.URL_SUPPORT = "http://support.quiktrak.eu/?name={0}&loginName={1}&email={2}&phone={3}&s={4}";
+API_URL.URL_REPORT_THEFT = "https://forms.quiktrak.com.au/report-theft/?loginName={0}&imei={1}&make={2}&model={3}&rego={4}";
+
 
 API_URL.URL_GET_BALANCE = API_DOMIAN3 + "Client/Balance?MajorToken={0}&MinorToken={1}";
 //API_URL.URL_SET_IMMOBILISATION = API_DOMIAN4 + "asset/Relay?MajorToken={0}&MinorToken={1}&code={2}&state={3}";
 API_URL.URL_SET_IMMOBILISATION = API_DOMIAN4 + "asset/RelayNoPay?MajorToken={0}&MinorToken={1}&code={2}&state={3}";
 
 API_URL.URL_SET_GEOLOCK = API_DOMIAN4 + "asset/GeoLock?MajorToken={0}&MinorToken={1}&code={2}&state={3}";
+API_URL.URL_SET_DOOR = API_DOMIAN4 + "asset/door?MajorToken={0}&MinorToken={1}&code={2}&state={3}";
 
 API_URL.URL_ROUTE = "https://www.google.com/maps/dir/?api=1&destination={0},{1}"; //&travelmode=walking
 API_URL.URL_REFRESH_TOKEN = API_DOMIAN1 + "User/RefreshToken";
+
+API_URL.URL_USERGUIDE = "https://quiktrakglobal.com/pdf/qt-app.pdf";
 
 
 var cameraButtons = [
@@ -408,7 +426,7 @@ var virtualAssetList = App.virtualList('.assets_list', {
 	        
 	        if (assetFeaturesStatus && assetFeaturesStatus.stats) {
 	        	
-                
+               
 	        	ret +=  '<li class="item-link item-content item_asset" data-imei="' + item.IMEI + '" data-id="' + item.Id + '">';                    
 	            ret +=      '<div class="item-media">'+assetImg+'</div>';
 	            ret +=      '<div class="item-inner">';
@@ -458,7 +476,7 @@ var virtualAssetList = App.virtualList('.assets_list', {
 	            ret +=                     '<span id="fuel-value'+item.IMEI+'" class="">'+assetFeaturesStatus.fuel.value+'</span>'; 
 	            ret +=                  '</div>';
 	                                }
-                                    if (assetFeaturesStatus.heartrate) {
+                                    if (assetFeaturesStatus.heartrate) {                                        
                 ret +=                  '<div class="col-50">';
                 ret +=                     '<i class="f7-icons icon-other-hearth asset_list_icon"></i>';              
                 ret +=                     '<span id="heartrate-value'+item.IMEI+'" class="">'+assetFeaturesStatus.heartrate.value+'</span>'; 
@@ -542,8 +560,7 @@ $$('body').on('click', 'a.external', function(event) {
     event.preventDefault();
     var href = this.getAttribute('href');
     if (href) {
-        if (typeof navigator !== "undefined" && navigator.app) {
-            //plus.runtime.openURL(href);            
+        if (typeof navigator !== "undefined" && navigator.app) {                
             navigator.app.loadUrl(href, {openExternal: true}); 
         } else {
             window.open(href,'_blank');
@@ -556,6 +573,23 @@ $$('body').on('change keyup input click', '.only_numbers', function(){
     if (this.value.match(/[^0-9-]/g)) {
          this.value = this.value.replace(/[^0-9-]/g, '');
     }
+});
+
+$$('body').on('click', '.sorting_button', function(e){  
+    var clickedLink = this;
+    var popoverHTML = '<div class="popover">'+
+                      '<div class="popover-inner">'+                      
+                        '<div class="list-block">'+
+                          '<ul>'+                       
+
+                          '<li><a href="#" class="item-divider color-gray">'+LANGUAGE.COM_MSG41+'</a></li>'+
+                          '<li><a href="#" class="item-link list-button color-boatwatch" onClick="sortAssetList(this);" data-sort-by="name" >'+LANGUAGE.COM_MSG42+'</a></li>'+
+                          '<li><a href="#" class="item-link list-button color-boatwatch" onClick="sortAssetList(this);" data-sort-by="state" >'+LANGUAGE.COM_MSG43+'</a></li>'+                          
+                          '</ul>'+
+                        '</div>'+
+                      '</div>'+
+                    '</div>';
+    App.popover(popoverHTML, clickedLink);
 });
 
 /*$$('body').on('click', '.navbar_title, .navbar_title_index', function(){
@@ -595,6 +629,15 @@ $$('body').on('click', '.routeButton', function(){
     
 });
 
+$$('body').on('click', '.reportTheft', function(){
+    event.preventDefault();
+    
+    loadPageTheftReport();
+    
+    return false;
+});
+
+
 
 $$('#menu li').on('click', function () {
     var id = $$(this).attr('id');
@@ -631,10 +674,22 @@ $$('#menu li').on('click', function () {
                 loadAlarmsAssetsPage();      
             }
             break;
+
+        case 'menuReports':
+            if ( typeof(activePage) == 'undefined' || (activePage && activePage.name != "reports")) {           
+                loadReportsPage();      
+            }
+            break;
+
+        case 'menuUserGuide':                    
+            loadPageUserGuide(); 
+            break; 
             
         case 'menuSupport':                    
             loadPageSupport(); 
-            break;   
+            break;  
+
+
 
                     
         case 'menuLogout':
@@ -932,11 +987,10 @@ App.onPageInit('asset.status', function (page) {
     var EngineHours = $$(page.container).find('.position_engineHours');
     var StoppedDuration = $$(page.container).find('.position_stoppedDuration');
     var Heartrate = $$(page.container).find('.position_heartrate');
+    
 
     var clickedLink = '';
     var popoverHTML = '';
-
-
 
     
         $$(page.container).find('.open-geolock').on('click', function () {
@@ -946,14 +1000,20 @@ App.onPageInit('asset.status', function (page) {
                           '<p>'+LANGUAGE.ASSET_STATUS_MSG43+'</p>'+                       
                     '</div>';
             App.popover(popoverHTML, clickedLink);            
-        });        
-    
-    
+        });   
         $$(page.container).find('.open-immob').on('click', function () {
             clickedLink = this;            
             popoverHTML = '<div class="popover popover-status">'+                      
                           '<p class="color-dealer">'+LANGUAGE.ASSET_STATUS_MSG25+'</p>'+
                           '<p>'+LANGUAGE.ASSET_STATUS_MSG42+'</p>'+                       
+                    '</div>';
+            App.popover(popoverHTML, clickedLink);            
+        });  
+        $$(page.container).find('.open-lockdoor').on('click', function () {
+            clickedLink = this;            
+            popoverHTML = '<div class="popover popover-status">'+                      
+                          '<p class="color-dealer">'+LANGUAGE.ASSET_STATUS_MSG26+'</p>'+
+                          '<p>'+LANGUAGE.ASSET_STATUS_MSG45+'</p>'+                       
                     '</div>';
             App.popover(popoverHTML, clickedLink);            
         });        
@@ -1059,7 +1119,7 @@ App.onPageInit('asset.status', function (page) {
                     '</div>';
             App.popover(popoverHTML, clickedLink);            
         });
-    }            
+    }        
     
 
     $$('.buttonAssetEdit').on('click', function(){
@@ -1097,11 +1157,21 @@ App.onPageInit('asset.status', function (page) {
     
     var geolock = $$(page.container).find('input[name="Geolock"]');
     var immob = $$(page.container).find('input[name="Immobilise"]');
+    var door = $$(page.container).find('input[name="LockDoor"]');
     geolock.on('change', function(){        
         changeGeolockImmobState({id: TargetAsset.ASSET_ID, imei: TargetAsset.ASSET_IMEI, state: this.checked, name: this.attributes.name.value});
     });
-    immob.on('change', function(){           
-        if (POSINFOASSETLIST[TargetAsset.ASSET_IMEI]._FIELD_INT2 != 0) { // check if asset support immobilise feature
+    immob.on('change', function(){     
+        if ((parseInt(POSINFOASSETLIST[TargetAsset.ASSET_IMEI]._FIELD_INT2) & 1) > 0) { // check if asset support immobilise feature
+        //if (POSINFOASSETLIST[TargetAsset.ASSET_IMEI]._FIELD_INT2 != 0) { 
+            changeGeolockImmobState({id: TargetAsset.ASSET_ID, imei: TargetAsset.ASSET_IMEI, state: this.checked, name: this.attributes.name.value});
+        } else{
+            changeSwitcherState({state: !this.checked, name: this.attributes.name.value});       
+            showCustomMessage({title: POSINFOASSETLIST[TargetAsset.ASSET_IMEI].Name, text: LANGUAGE.PROMPT_MSG033});
+        }         
+    });
+    door.on('change', function(){           
+        if ((parseInt(POSINFOASSETLIST[TargetAsset.ASSET_IMEI]._FIELD_INT2) & 512) > 0) { // check if asset support door lock feature
             changeGeolockImmobState({id: TargetAsset.ASSET_ID, imei: TargetAsset.ASSET_IMEI, state: this.checked, name: this.attributes.name.value});
         } else{
             changeSwitcherState({state: !this.checked, name: this.attributes.name.value});       
@@ -1297,7 +1367,7 @@ App.onPageInit('alarms.assets', function (page) {
             ret +=          '<div class="item-media">'+assetImg+'</div>';
             ret +=          '<div class="item-inner">';
             ret +=              '<div class="item-title-row">';
-            ret +=                  '<div class="item-title ">' + item.Name + '</div>';
+            ret +=                  '<div class="item-title color-white">' + item.Name + '</div>';
             ret +=                  '<div class="item-after">';
             ret +=                      '<i class="icon icon-form-checkbox"></i>';
             ret +=                  '</div>';
@@ -1373,7 +1443,7 @@ App.onPageInit('alarms.select', function (page) {
 
     var alarm = $$(page.container).find('input[name = "checkbox-alarm"]');    
 
-    var alarmFields = ['accOff','accOn','customAlarm','custom2LowAlarm','geolock','geofenceIn','geofenceOut','illegalIgnition','lowBattery','mainBatteryFail','sosAlarm','speeding','tilt'];  
+    var alarmFields = ['accOff','accOn','customAlarm','custom2LowAlarm','geolock','geofenceIn','geofenceOut','illegalIgnition','lowBattery','mainBatteryFail','sosAlarm','speeding','tilt', 'harshAcc', 'harshBrk'];  
    
     var allCheckboxesLabel = $$(page.container).find('label.item-content');
     var allCheckboxes = allCheckboxesLabel.find('input');
@@ -1459,7 +1529,7 @@ App.onPageInit('geofence', function (page) {
         if(a.Name > b.Name) return 1;
         return 0;
     });    
-    console.log(arrGeofenceList);
+   // console.log(arrGeofenceList);
     if (virtualGeofenceList) {
         virtualGeofenceList.destroy();
     }
@@ -1479,8 +1549,8 @@ App.onPageInit('geofence', function (page) {
             var ret =   '<li class="item-content" id="'+ item.Code +'" data-code="'+ item.Code +'" data-index="'+ index +'" data-state="'+ item.State +'">' +
                             '<div class="item-inner">' +
                                 '<div class="item-title-row">' +
-                                    '<div class="item-title ">'+ item.Name +'</div>' +
-                                    '<div class="item-after "><a href="#" class="item-link geofence_menu"><i class="f7-icons icon-other-menu-geofence "></i></a></div>' +
+                                    '<div class="item-title label">'+ item.Name +'</div>' +
+                                    '<div class="item-after "><a href="#" class="item-link geofence_menu"><i class="f7-icons icon-other-menu-geofence color-white"></i></a></div>' +
                                 '</div>' +                                
                                 '<div class="item-text">'+ item.Address +'</div>' +
                             '</div>' +                            
@@ -1499,12 +1569,13 @@ App.onPageInit('geofence', function (page) {
         });                
     });*/
     $$('.addGeofence').on('click', function(e){
-        var assetList = formatArrAssetList();
+        var assetList = formatArrAssetList();       
+
         mainView.router.load({
             url:'resources/templates/geofence.add.html',
             context:{
                 GeofenceName: LANGUAGE.GEOFENCE_MSG_00,
-                Assets: assetList     
+                Assets: assetList,               
             }
         });  
     });
@@ -1605,7 +1676,24 @@ App.onPageInit('geofence.add', function (page) {
     var address =  $$(page.container).find('[name="geofenceAddress"]');
     var geofenceName = $$(page.container).find('input[name="geofenceName"]');
     var assets = $$(page.container).find('select[name="assets"]');
-   
+
+    var geofencePreferenceList = $$(page.container).find('.list_geofence_preferences'); 
+    var ignoreBetweenEl = $$(page.container).find('[name="ignoreBetween"]');
+    var pickerWrapperEl = $$(page.container).find('.picker-el-wrapper');
+    var ignoreOnEl = $$(page.container).find('.ignore-on-wrapper');
+    var BeginTimeInput = $$(page.container).find('[name="picker-from"]');
+    var EndTimeInput = $$(page.container).find('[name="picker-to"]');
+    var BeginTimeValArray = BeginTimeInput.val() ? BeginTimeInput.val().split(':') : [];      
+    var EndTimeInputArray = EndTimeInput.val() ? EndTimeInput.val().split(':') : [];   
+
+    if (!BeginTimeValArray || !BeginTimeValArray.length) {
+        BeginTimeValArray = ['19', '00'];
+    }
+    if (!EndTimeInputArray || !EndTimeInputArray.length) {
+        EndTimeInputArray = ['06', '00'];
+    }
+
+    //var today = new Date();
     
     radius.on('change input', function(){
     	var value = this.value;
@@ -1622,7 +1710,7 @@ App.onPageInit('geofence.add', function (page) {
     timeRangeState.on('change', function(){
         var value = this.value;    
         App.showTab('#tab'+value);
-    });
+    });    
 
     assets.on('change', function(){
         var arrAssets = [];            
@@ -1653,6 +1741,134 @@ App.onPageInit('geofence.add', function (page) {
     	return false;
     });
 
+    var pickerFrom = App.picker({
+        input: BeginTimeInput,
+        cssClass: 'custom-picker custom-time',
+        toolbarTemplate:'<div class="toolbar">'+
+                          '<div class="toolbar-inner">'+
+                            '<div class="left"><div class="text">'+LANGUAGE.GEOFENCE_MSG_29+'</div></div>'+
+                            '<div class="right">'+
+                              '<a href="#" class="link close-picker color-black">{{closeText}}</a>'+
+                            '</div>'+
+                          '</div>'+
+                        '</div>',
+        
+        value: BeginTimeValArray,
+     
+        onChange: function (picker, values, displayValues) {
+            /*var daysInMonth = new Date(picker.value[2], picker.value[0]*1 + 1, 0).getDate();
+            if (values[1] > daysInMonth) {
+                picker.cols[1].setValue(daysInMonth);
+            }*/
+        },
+     
+        formatValue: function (p, values, displayValues) {
+            return values[0] + ':' + values[1];
+        },
+     
+        cols: [            
+            // Hours
+            {
+                values: (function () {
+                    var arr = [];
+                    for (var i = 0; i <= 23; i++) { arr.push(i < 10 ? '0' + i : i); }
+                    return arr;
+                })(),
+            },
+            // Divider
+            /*{
+                divider: true,
+                content: ':'
+            },*/
+            // Minutes
+            {
+                values: (function () {
+                    var arr = [];
+                    for (var i = 0; i <= 59; i++) { arr.push(i < 10 ? '0' + i : i); }
+                    return arr;
+                })(),
+            }
+        ]
+    });
+
+    var pickerTo = App.picker({
+        input: EndTimeInput,
+        cssClass: 'custom-picker custom-time',
+        toolbarTemplate:'<div class="toolbar">'+
+                          '<div class="toolbar-inner">'+
+                            '<div class="left"><div class="text">'+LANGUAGE.GEOFENCE_MSG_30+'</div></div>'+
+                            '<div class="right">'+
+                              '<a href="#" class="link close-picker color-black">{{closeText}}</a>'+
+                            '</div>'+
+                          '</div>'+
+                        '</div>',
+        
+        value: EndTimeInputArray,
+     
+        onChange: function (picker, values, displayValues) {
+            /*var daysInMonth = new Date(picker.value[2], picker.value[0]*1 + 1, 0).getDate();
+            if (values[1] > daysInMonth) {
+                picker.cols[1].setValue(daysInMonth);
+            }*/
+        },
+     
+        formatValue: function (p, values, displayValues) {
+            return values[0] + ':' + values[1];
+        },
+     
+        cols: [            
+            // Hours
+            {
+                values: (function () {
+                    var arr = [];
+                    for (var i = 0; i <= 23; i++) { arr.push(i < 10 ? '0' + i : i); }
+                    return arr;
+                })(),
+            },
+            // Divider
+            /*{
+                divider: true,
+                content: ':'
+            },*/
+            // Minutes
+            {
+                values: (function () {
+                    var arr = [];
+                    for (var i = 0; i <= 59; i++) { arr.push(i < 10 ? '0' + i : i); }
+                    return arr;
+                })(),
+            }
+        ]
+    });
+
+    $$(geofencePreferenceList).on('click', 'li.picker-el-wrapper', function(event){
+        event.stopPropagation();
+        var input = $$(this).find('input');
+
+        if (input) {
+            var name = input.attr('name');            
+            switch(name){
+                case 'picker-from':
+                    pickerFrom.open();
+                    break;
+                case 'picker-to':
+                    pickerTo.open();
+                    break;                
+            }            
+        }
+    });  
+
+    ignoreBetweenEl.on('change', function(){
+        pickerWrapperEl.toggleClass('disabled');
+        ignoreOnEl.toggleClass('disabled');
+        /*if (this.checked) {
+            pickerWrapperEl.removeClass('disabled');
+            ignoreOnEl.removeClass('disabled');
+        }else{
+            pickerWrapperEl.addClass('disabled');
+            ignoreOnEl.addClass('disabled');
+        }*/
+    });
 
     if (valEdit) {
         var geofence = getGeoFenceList()[valEdit];  
@@ -1671,6 +1887,12 @@ App.onPageInit('geofence.add', function (page) {
         var alarmType = $$(page.container).find('select[name="alarmType"]');
         var valAlarmType = '';
 
+        var ignoreState = $$(page.container).find('input[name="ignoreBetween"]');  
+        var ignoreDays = $(page.container).find('select[name="ignore-days"]');         
+        var ignoreTimeFrom = $$(page.container).find('input[name="picker-from"]');  
+        var ignoreTimeTo = $$(page.container).find('input[name="picker-to"]');
+        var ignoreDaysArr = ignoreDays.val();   
+        
         if (valRadius < 100 ) {
             valid = 0;
             errorList.push(LANGUAGE.PROMPT_MSG008);   
@@ -1691,7 +1913,12 @@ App.onPageInit('geofence.add', function (page) {
             valAlarmType = valAlarmType.substr(1);
         }  	
 
-    	
+    	if (ignoreState.is(":checked")) {
+            if (!ignoreDaysArr) {
+                valid = 0;
+                errorList.push(LANGUAGE.PROMPT_MSG059);
+            }
+        }
 
     	if (valid) {
             var userInfo = getUserinfo();            
@@ -1711,8 +1938,8 @@ App.onPageInit('geofence.add', function (page) {
             if (state.is(":checked")) {
                 valState = 1;
             } 
-                
-          
+                                  
+
     		var data = {
                 MajorToken: userInfo.MajorToken,
                 MinorToken: userInfo.MinorToken,
@@ -1726,15 +1953,27 @@ App.onPageInit('geofence.add', function (page) {
                 AlertConfigState: valState,
                 GeoType: 1,
                 AssetCodes: valAssets,
-                Address: valAddress
-            };   
+                Address: valAddress,
+                Inverse: 0,
+            };  
 
+            if (ignoreState.is(":checked")) {
+                data.Inverse = 1;
+            }  
+            if (ignoreDaysArr && ignoreDaysArr.length) {
+                data.Days = ignoreDaysArr.toString();                   
+            } 
+            data.BeginTime = moment(ignoreTimeFrom.val(),'HH:mm').format('HH:mm:ss');
+            data.EndTime = moment(ignoreTimeTo.val(),'HH:mm').format('HH:mm:ss');
+            
             var url = API_URL.URL_GEOFENCE_ADD;
 
             if (valEdit) {
                 data.Code = valEdit;
                 url = API_URL.URL_GEOFENCE_EDIT;
-            }            
+            }   
+           
+            //console.log(data);         
             saveGeofence(url, data);            
             
     	}else{
@@ -1754,7 +1993,11 @@ App.onPageInit('geofence.add', function (page) {
 
 });
 
-
+           
+App.onPageBeforeRemove('geofence.add', function(page){
+    // fix to close modal calendar if it was opened and default back button pressed
+    App.closeModal('.custom-picker');
+});
 
 App.onPageInit('resetPwd', function (page) {     
     $$('.saveResetPwd').on('click', function(e){    
@@ -1798,7 +2041,7 @@ App.onPageInit('resetPwd', function (page) {
 App.onPageInit('asset.alarm', function (page) {
     var alarm = $$(page.container).find('input[name = "checkbox-alarm"]');    
 
-    var alarmFields = ['accOff','accOn','customAlarm','custom2LowAlarm','geolock','geofenceIn','geofenceOut','illegalIgnition','lowBattery','mainBatteryFail','sosAlarm','speeding','tilt'];  
+    var alarmFields = ['accOff','accOn','customAlarm','custom2LowAlarm','geolock','geofenceIn','geofenceOut','illegalIgnition','lowBattery','mainBatteryFail','sosAlarm','speeding','tilt', 'harshAcc', 'harshBrk'];  
    
     var allCheckboxesLabel = $$(page.container).find('label.item-content');
     var allCheckboxes = allCheckboxesLabel.find('input');
@@ -1841,7 +2084,9 @@ App.onPageInit('asset.alarm', function (page) {
         var url = API_URL.URL_SET_ALARM.format(userInfo.MinorToken,
                 alarmOptions.IMEI,
                 alarmOptions.options                                
-            );                    
+            );    
+
+                       
 
         App.showPreloader();
         JSON1.request(url, function(result){ 
@@ -2402,6 +2647,29 @@ App.onPageInit('user.recharge.credit', function (page) {
 
 });
 
+App.onPageInit('reports', function (page) { 
+    var reportsListEl = $$(page.container).find('.reportsList');
+
+    reportsListEl.on('click', '.item-link', function(){
+        var type = $$(this).data('type');
+
+        switch (type){
+            case '1':
+                loadPageOverviewReport();
+                break;
+
+            case '2':
+                loadPageAlarmReport();
+                break;
+
+            case '4':
+                loadPageTripReport();
+                break;
+        }
+    });
+});
+
+
 
 
  
@@ -2421,9 +2689,23 @@ function clearUserInfo(){
 	POSINFOASSETLIST = {}; 
     var alarmList = getAlarmList();    
     var pushList = getNotificationList();
+
+    var ModalReview = !localStorage.ModalReview ? '' : localStorage.ModalReview;
+    var FirstLoginDone = !localStorage.FirstLoginDone ? '' : localStorage.FirstLoginDone;
     
     localStorage.clear(); 
-  
+
+    if(push) {
+        push.clearAllNotifications(
+            () => {
+              console.log('success');
+            },
+            () => {
+              console.log('error');
+            }
+        );
+    }
+
     if (updateAssetsPosInfoTimer) {
         clearInterval(updateAssetsPosInfoTimer);
     }
@@ -2446,12 +2728,15 @@ function clearUserInfo(){
     if (mobileToken) {
         localStorage.PUSH_MOBILE_TOKEN = mobileToken;
     }
-    /*if(MinorToken){      
-        console.log(API_URL.URL_GET_LOGOUT2.format(MajorToken, MinorToken, userName, mobileToken));
-        JSON1.request(API_URL.URL_GET_LOGOUT2.format(MajorToken, MinorToken, userName, mobileToken), function(result){ console.log(result); });         
-    }   */
-    	//console.log(API_URL.URL_GET_LOGOUT.format(mobileToken));
-        JSON1.request(API_URL.URL_GET_LOGOUT.format(mobileToken, deviceToken), function(result){ console.log(result); });         
+
+    if (ModalReview) {
+        localStorage.ModalReview = ModalReview;
+    }
+    if (FirstLoginDone) {
+        localStorage.FirstLoginDone = FirstLoginDone;
+    }
+   
+    JSON1.request(API_URL.URL_GET_LOGOUT.format(mobileToken, deviceToken), function(result){ console.log(result); });         
     
     $$("input[name='account']").val(userName);
 }
@@ -2502,7 +2787,7 @@ function login(){
     var appKey = !localStorage.PUSH_APP_KEY? '111' : localStorage.PUSH_APP_KEY;
     //var deviceToken = !localStorage.PUSH_DEVICE_TOKEN? '111' : localStorage.PUSH_DEVICE_TOKEN;
     var deviceToken = !localStorage.PUSH_DEVICE_TOKEN ? '111' : localStorage.PUSH_DEVICE_TOKEN;
-    var deviceType = !localStorage.DEVICE_TYPE? 'web' : localStorage.DEVICE_TYPE;
+    var deviceType = !localStorage.DEVICE_TYPE? 'webapp' : localStorage.DEVICE_TYPE;
     var account = $$("input[name='account']");
     var password = $$("input[name='password']");  
 
@@ -2533,12 +2818,13 @@ function login(){
                 password.val(null);
                 setUserinfo(result.Data);
                 setAssetList(result.Data.Devices); 
-                updateUserCredits(result.Data.User.Credits);      
+                updateUserCredits(result.Data.User.Credits);   
+                afterLogin(result);   
                         
                
                 //init_AssetList(); 
                 //initSearchbar();
-                  
+                //webSockConnect();  
                 getNewNotifications();
                 
                 App.closeModal();                
@@ -2551,6 +2837,18 @@ function login(){
         function(){ App.hidePreloader(); App.alert(LANGUAGE.COM_MSG02);App.loginScreen();  }
     ); 
    
+}
+
+function afterLogin(result){
+    var CountryCode = result.Data.User.CountryCode;
+
+    if (CountryCode && CountryCode.toLowerCase() != 'aus') {
+        $$('.menu_call_button').hide();
+        //$$('.menu_wrapper').addClass('without-call-button');
+    }else{
+        $$('.menu_call_button').show();
+        //$$('.menu_wrapper').removeClass('without-call-button');
+    }
 }
 
 function refreshToken(newDeviceToken){
@@ -2596,11 +2894,13 @@ function init_AssetList() {
         newAssetlist.push(assetList[value]);       
     });
 
-    newAssetlist.sort(function(a,b){
+    /*newAssetlist.sort(function(a,b){
         if(a.Name < b.Name) return -1;
         if(a.Name > b.Name) return 1;
         return 0;
-    });
+    });*/
+
+    newAssetlist = sortListByState(newAssetlist,'state');
     
     mainView.router.back({
         pageName: 'index', 
@@ -2782,6 +3082,101 @@ function loadAlarmsAssetsPage(){
                 });
 }
 
+function loadPageUserGuide(){
+    var href = API_URL.URL_USERGUIDE;
+    if (typeof navigator !== "undefined" && navigator.app) {        
+        navigator.app.loadUrl(href, {openExternal: true});           
+    } else {
+        window.open(href,'_blank');
+    }
+}
+
+function loadReportsPage(){
+    mainView.router.load({
+        url:'resources/templates/reports.html',                     
+        
+    });
+}
+
+function loadPageOverviewReport(){
+	var userInfo = getUserinfo().User;
+	var assetList = formatArrAssetList();
+    mainView.router.load({
+        url:'resources/templates/reports.overview.html',                     
+        context: {
+        	Assets: assetList,
+        	Email: userInfo.EMail,
+        	StartDateTime: moment().subtract(1, 'days').format(window.COM_TIMEFORMAT3),
+        	EndDateTime: moment().format(window.COM_TIMEFORMAT3),
+        }
+    });
+}
+function loadPageAlarmReport(){
+	var userInfo = getUserinfo().User;
+	var assetList = formatArrAssetList();
+    mainView.router.load({
+        url:'resources/templates/reports.alarm.html',                     
+        context: {
+        	Assets: assetList,
+        	Email: userInfo.EMail,
+        	StartDateTime: moment().subtract(1, 'days').format(window.COM_TIMEFORMAT3),
+        	EndDateTime: moment().format(window.COM_TIMEFORMAT3),
+        }
+    });
+}
+function loadPageTripReport(){
+	var userInfo = getUserinfo().User;
+	var assetList = formatArrAssetList();
+    mainView.router.load({
+        url:'resources/templates/reports.trip.html',                     
+        context: {
+        	Assets: assetList,
+        	Email: userInfo.EMail,
+        	StartDateTime: moment().subtract(1, 'days').format(window.COM_TIMEFORMAT3),
+        	EndDateTime: moment().format(window.COM_TIMEFORMAT3),
+        }
+    });
+}
+
+function loadPageTheftReport(){    
+    var assetList = getAssetList();
+    var asset = assetList[TargetAsset.ASSET_IMEI];
+    var param = {
+        loginName:'',
+        imei:'',
+        make:'',
+        model:'',
+        rego: ''
+    };
+
+    
+    if (localStorage.ACCOUNT) {
+        param.loginName = encodeURIComponent(localStorage.ACCOUNT.trim());
+    }
+    if (TargetAsset.ASSET_IMEI) {      
+        param.imei = encodeURIComponent(TargetAsset.ASSET_IMEI);
+    }
+   
+    if (asset.Describe1) {
+        param.make = encodeURIComponent(asset.Describe1.trim());       
+    }
+    if (asset.Describe2) {
+        param.model = encodeURIComponent(asset.Describe2.trim());       
+    }
+    if (asset.TagName) {
+        param.rego = encodeURIComponent(asset.TagName.trim());       
+    }
+     
+    var href = API_URL.URL_REPORT_THEFT.format(param.loginName,param.imei,param.make,param.model,param.rego); 
+    
+    if (typeof navigator !== "undefined" && navigator.app) {
+        //plus.runtime.openURL(href); 
+        navigator.app.loadUrl(href, {openExternal: true});           
+    } else {
+        window.open(href,'_blank');
+    }
+}
+
 function loadPageSupport(){
     var userInfo = getUserinfo().User;  
 
@@ -2859,16 +3254,16 @@ function getAssetImg(params, imgFor){
 	            		}
             		}
             	}            	
-                assetImg = '<div class="item_asset_img bg-dealer"><div class="text-a-c vertical-center user_f_l">'+one+two+'</div></div>';            
+                assetImg = '<div class="item_asset_img bg-white"><div class="text-a-c vertical-center user_f_l">'+one+two+'</div></div>';            
             }else{
-                assetImg = '<div class="item_asset_img bg-dealer"><div class="text-a-c vertical-center user_f_l">'+params.Name[0]+params.Name[1]+'</div></div>';            
+                assetImg = '<div class="item_asset_img bg-white"><div class="text-a-c vertical-center user_f_l">'+params.Name[0]+params.Name[1]+'</div></div>';            
             }
             
         }else if(params.IMEI){
-            assetImg = '<div class="item_asset_img bg-dealer"><div class="text-a-c vertical-center user_f_l">'+params.IMEI[0]+params.IMEI[1]+'</div></div>';
+            assetImg = '<div class="item_asset_img bg-white"><div class="text-a-c vertical-center user_f_l">'+params.IMEI[0]+params.IMEI[1]+'</div></div>';
         }
     }else{
-        assetImg = '<div class="item_asset_img bg-dealer"><div class="text-a-c vertical-center user_f_l">?</div></div>';
+        assetImg = '<div class="item_asset_img bg-white"><div class="text-a-c vertical-center user_f_l">?</div></div>';
     }   
     return assetImg;
 }
@@ -3266,6 +3661,7 @@ function loadStatusPage(){
             geolock: false,
             immob: false,
             heartrate: false,
+            lockdoor: false,
 	    };
 
 	    
@@ -3302,9 +3698,10 @@ function loadStatusPage(){
         } 
         if (assetFeaturesStatus.heartrate ) {
             assetStats.heartrate = assetFeaturesStatus.heartrate.value;
-
         }
-
+        if (assetFeaturesStatus.lockdoor) {
+            assetStats.lockdoor = assetFeaturesStatus.lockdoor.value;
+        }
 
 
 	    mainView.router.load({
@@ -3328,6 +3725,7 @@ function loadStatusPage(){
                 GeolockState: assetStats.geolock,                
                 Coords: 'GPS: ' + Protocol.Helper.convertDMS(latlng.lat, latlng.lng),
                 Heartrate: assetStats.heartrate,
+                LockDoorState: assetStats.lockdoor,   
 	        }
 	    }); 
         
@@ -3352,15 +3750,24 @@ function changeGeolockImmobState(params){
         var url = API_URL.URL_SET_GEOLOCK;
         if (params.name == 'Immobilise') {
             url = API_URL.URL_SET_IMMOBILISATION;               
+        }else if(params.name == 'LockDoor'){
+            url = API_URL.URL_SET_DOOR;     
         }
 
-        var linkState = 'off';
-
-        url = url.format(userInfo.MajorToken,
-            userInfo.MinorToken,
-            params.id,
-            params.state ? 'on' : 'off'
-        ); 
+        if (params.name == 'LockDoor') {
+            url = url.format(userInfo.MajorToken,
+                userInfo.MinorToken,
+                params.id,
+                params.state ? 'lock' : 'unlock'
+            ); 
+        }else{
+            url = url.format(userInfo.MajorToken,
+                userInfo.MinorToken,
+                params.id,
+                params.state ? 'on' : 'off'
+            ); 
+        }
+            
         console.log(url);
         App.showPreloader();
         JSON1.request(url, function(result){ 
@@ -3373,7 +3780,10 @@ function changeGeolockImmobState(params){
                         state: params.state
                     });  
                     changeIconColor(params);
-                    checkBalance();                     
+                    if (params.name != 'Immobilise' && params.name != 'Geolock') {
+                        checkBalance(); 
+                    }
+                                        
                                    
                 }else if(result.MajorCode == '200' && result.MinorCode == '1003'){ 
                     showNoCreditMessage();
@@ -3388,7 +3798,7 @@ function changeGeolockImmobState(params){
                     params.state = !params.state;
                     changeSwitcherState(params);
                 }
-                                App.hidePreloader();
+                App.hidePreloader();
             },
             function(){ App.hidePreloader(); App.alert(LANGUAGE.COM_MSG02); }
         );                 
@@ -3413,6 +3823,8 @@ function changeIconColor(params){
                 if (params.name == 'Immobilise') {
                     $$(icon).removeClass('state-3 color-gray').addClass('state-3');
                     $('#immob-state'+params.imei).removeClass('state-3 state-0').addClass('state-3');
+                }else if(params.name == 'LockDoor'){
+                    $$(icon).removeClass('state-3 color-gray').addClass('state-3');                    
                 }else{
                     $$(icon).removeClass('state-1 color-gray').addClass('state-1');
                     $('#geolock-state'+params.imei).removeClass('state-1 state-0').addClass('state-1');
@@ -3421,6 +3833,8 @@ function changeIconColor(params){
                 if (params.name == 'Immobilise') {
                     $$(icon).removeClass('state-3 color-gray').addClass('color-gray');
                     $('#immob-state'+params.imei).removeClass('state-3 state-0').addClass('state-0');
+                }else if(params.name == 'LockDoor'){
+                    $$(icon).removeClass('state-3 color-gray').addClass('color-gray');  
                 }else{
                     $$(icon).removeClass('state-1 color-gray').addClass('color-gray');
                     $('#geolock-state'+params.imei).removeClass('state-1 state-0').addClass('state-0');
@@ -3456,6 +3870,72 @@ function showNoCreditMessage(){
             },
         ]
     });             
+}
+
+function showAskForReviewMessage(){
+
+    var appId = ''; 
+    if(window.device) {
+        var platform = device.platform.toLowerCase();
+        switch(platform){
+            case "ios":
+                appId = AppDetails.appleId;
+                break;
+            case "android":
+                appId = AppDetails.appId;
+                break;
+        }
+    }
+        
+
+    var modal = App.modal({
+        title: '<div class="custom-modal-logo-wrapper"><img class="custom-modal-logo" src="resources/images/logo.png" alt=""/></div>',
+        text: '<div class="custom-modal-text">' + LANGUAGE.PROMPT_MSG053 +'</div>',
+        afterText:  '<div class="list-block no-hairlines modal-checkbox">' +
+                        '<ul>' +
+                            '<li>' +
+                                '<label class="label-checkbox item-content">' +
+                                    '<input type="checkbox" name="checkbox-not-show-modal-review" value="">' +
+                                    '<div class="item-media">' +
+                                        '<i class="icon icon-form-checkbox"></i>' +
+                                    '</div>' +
+                                    '<div class="item-inner">' +
+                                        '<div class="item-title">' + LANGUAGE.COM_MSG40 + '</div>' +
+                                    '</div>' +
+                                '</label>' +
+                            '</li>' +
+                        '</ul>' +
+                    '</div>', 
+        buttons: [
+            {
+                text: LANGUAGE.COM_MSG39,
+                onClick: function () {
+                    var checkboxState = $$('body input[name="checkbox-not-show-modal-review"]').is(":checked");
+                    if (checkboxState) {
+                        localStorage.ModalReview = checkboxState;
+                    }
+                }
+            },
+            {
+                text: LANGUAGE.COM_MSG38,
+                bold: true,
+                onClick: function () {
+                    var checkboxState = $$('body input[name="checkbox-not-show-modal-review"]').is(":checked");
+                    if (checkboxState) {
+                        localStorage.ModalReview = checkboxState;
+                    }
+
+                    if (LaunchReview) {
+                        LaunchReview.launch(function(){
+                            console.log("Successfully launched store app");
+                        },function(err){
+                            console.log("Error launching store app: " + err);
+                        }, appId);
+                    }                        
+                }
+            },
+        ]
+    });
 }
 
 function showCustomMessage(params){
@@ -3537,6 +4017,14 @@ function loadAlarmPage(){
             state: true,
             val: 256,
         },
+        harshAcc: {
+            state: true,
+            val: 33554432,
+        },
+        harshBrk: {
+            state: true,
+            val: 2097152,
+        },
         alarm: {
             state: true,
             //val: 0,
@@ -3550,7 +4038,7 @@ function loadAlarmPage(){
                 alarms[key].state = false;
             }            
         });
-        if (assetAlarmVal == 1279934) {
+        if (assetAlarmVal == 36931518) {
             alarms.alarm.state = false;
         }
         
@@ -3579,6 +4067,8 @@ function loadAlarmPage(){
             sosAlarm: alarms.sosAlarm.state,
             speeding: alarms.speeding.state,
             tilt: alarms.tilt.state,
+            harshAcc: alarms.harshAcc.state,
+            harshBrk: alarms.harshBrk.state,
         }
     });
 }
@@ -4177,10 +4667,11 @@ function updateAssetsListStats(){
                     }    
                     if (assetFeaturesStatus.heartrate) {
                         statusPageContainer.find('.position_heartrate').html(assetFeaturesStatus.heartrate.value); 
-                    }
+                    } 
                    
                     statusPageContainer.find('.position_immob').removeClass('state-0 state-1 state-2 state-3').addClass(assetFeaturesStatus.immob.state);                
-                    statusPageContainer.find('.position_geolock').removeClass('state-0 state-1 state-2 state-3').addClass(assetFeaturesStatus.geolock.state);            
+                    statusPageContainer.find('.position_geolock').removeClass('state-0 state-1 state-2 state-3').addClass(assetFeaturesStatus.geolock.state); 
+                    statusPageContainer.find('.position_lockdoor').removeClass('state-0 state-1 state-2 state-3').addClass(assetFeaturesStatus.lockdoor.state);           
                     /*console.log(assetFeaturesStatus.immob.state);
                     console.log(assetFeaturesStatus.geolock.state);*/
                 }
@@ -4369,7 +4860,17 @@ function setAssetListPosInfo(listObj){
                 //console.log(result);
             }
             init_AssetList(); 
-            initSearchbar(); 
+            initSearchbar();
+            setTimeout(function(){        
+                if (!localStorage.ModalReview && localStorage.FirstLoginDone ) {
+                    showAskForReviewMessage();
+                }     
+
+                if (!localStorage.FirstLoginDone) {
+                    localStorage.FirstLoginDone = true;
+                }   
+            }, 5000);
+
             localStorage.loginDone = 1;
         },
         function(){ localStorage.loginDone = 1; }
@@ -4445,7 +4946,7 @@ function getNewData(){
     var mobileToken = !localStorage.PUSH_MOBILE_TOKEN? '111' : localStorage.PUSH_MOBILE_TOKEN;
     var appKey = !localStorage.PUSH_APP_KEY? '111' : localStorage.PUSH_APP_KEY;
     var deviceToken = !localStorage.PUSH_DEVICE_TOKEN? '111' : localStorage.PUSH_DEVICE_TOKEN;
-    var deviceType = !localStorage.DEVICE_TYPE? 'android' : localStorage.DEVICE_TYPE;
+    var deviceType = !localStorage.DEVICE_TYPE? 'webapp' : localStorage.DEVICE_TYPE;
    
    // alert('logged in');
     
@@ -4473,6 +4974,56 @@ function getNewData(){
     ); 
    
 
+}
+
+function sortAssetList(elem){
+    if (elem) {
+        var $elem = $$(elem);
+        var sortType = $elem.data("sort-by");
+        //var sortOrder = $elem.data("sort-order");
+        if (virtualAssetList && virtualAssetList.items && virtualAssetList.items.length) {
+            var assets = virtualAssetList.items;
+            
+            assets = sortListByState(assets, sortType);                 
+
+            virtualAssetList.replaceAllItems(assets); 
+        }
+    }
+    App.closeModal();
+}
+
+function sortListByState(array, sortType){
+    if (array && array.length) {       
+        array.sort(function(a,b){
+            if(a.Name < b.Name) return -1;
+            if(a.Name > b.Name) return 1;
+            return 0;
+        });
+
+        switch(sortType){ 
+            case 'state':
+                var oneDay = 1000*60*60*24;
+                var now = moment();                
+                var arrayOnline = [];
+                var arrayOffline = [];
+                for (var i = 0; i < array.length; i++) {
+                    if (POSINFOASSETLIST[array[i].IMEI] && POSINFOASSETLIST[array[i].IMEI].posInfo && POSINFOASSETLIST[array[i].IMEI].posInfo.positionTime) {
+                        var dateDifference = Protocol.Helper.getDifferenceBTtwoDates(POSINFOASSETLIST[array[i].IMEI].posInfo.positionTime, now);
+                        if (dateDifference <= oneDay){
+                            arrayOnline.push(array[i]);
+                        }else{
+                            arrayOffline.push(array[i]);
+                        }                        
+                    }else{
+                        arrayOffline.push(array[i]);
+                    }                    
+                }                
+                array = arrayOnline.concat(arrayOffline);
+
+                break; 
+        }  
+    }    
+    return array;
 }
 
 function getNewNotifications(params){         
@@ -4816,6 +5367,56 @@ function editGeofence(code){
         AlarmIn = 1;
     }
 
+    var daysOfWeekArray = [
+        {
+            val: 0,
+            name: LANGUAGE.GEOFENCE_MSG_20,
+            selected: false,
+        },
+        {
+            val: 1,
+            name: LANGUAGE.GEOFENCE_MSG_21,
+            selected: false,
+        },
+        {
+            val: 2,
+            name: LANGUAGE.GEOFENCE_MSG_22,
+            selected: false,
+        },
+        {
+            val: 3,
+            name: LANGUAGE.GEOFENCE_MSG_23,
+            selected: false,
+        },
+        {
+            val: 4,
+            name: LANGUAGE.GEOFENCE_MSG_24,
+            selected: false,
+        },
+        {
+            val: 5,
+            name: LANGUAGE.GEOFENCE_MSG_25,
+            selected: false,
+        },
+        {
+            val: 6,
+            name: LANGUAGE.GEOFENCE_MSG_26,
+            selected: false,
+        },
+    ];
+
+    var BeginTime = '19:00';
+    var EndTime = '06:00';
+    if (geofence.Week && geofence.Week.length) {
+        $.each(geofence.Week, function(index, value){       
+            var dayIndex = daysOfWeekArray.findIndex(x => x.val === value.Week);
+            daysOfWeekArray[dayIndex].selected = true;
+        });
+        BeginTime = geofence.Week[0].BeginTime;
+        EndTime = geofence.Week[0].EndTime;
+    }
+
+
     mainView.router.load({
         url:'resources/templates/geofence.add.html',
         context:{
@@ -4828,6 +5429,10 @@ function editGeofence(code){
             GeofenceState: geofence.State,
             AlarmIn: AlarmIn,
             AlarmOut: AlarmOut,
+            DaysOfWeek: daysOfWeekArray,
+            BeginTime: BeginTime,
+            EndTime: EndTime,
+            IgnoreBetween: geofence.Inverse
         }
     });     
       
@@ -4895,7 +5500,15 @@ function changeGeofenceState(geofence, state){
             AssetCodes: assetCodes,
             Address: geofence.Address,
             Code: geofence.Code,
+            Inverse: geofence.Inverse ? geofence.Inverse : 0,
         };
+        if (geofence.Week && geofence.Week.length) {        	
+			data.BeginTime = geofence.Week[0].BeginTime ? geofence.Week[0].BeginTime : '';
+            data.EndTime = geofence.Week[0].EndTime ? geofence.Week[0].EndTime : '';
+
+            data.Days = geofence.Week.map(x => x.Week).toString();
+        }
+        console.log(data);
         var url = API_URL.URL_GEOFENCE_EDIT;
         saveGeofence(url, data);
     }        
@@ -4952,7 +5565,7 @@ function formatArrAssetList(){
 }
 
 
-/* ASSET EDIT PHOTO */
+
 
 /* ASSET EDIT PHOTO */
 

@@ -1,17 +1,17 @@
 <div class="page bg-color-page status_page" data-page="asset.status">
-	<div class="navbar color-white">
+	<div class="navbar">
         <div class="navbar-inner">
             <div class="left">
             	<a href="#" class="link backToIndex "> <i class="f7-icons icon-header-arrow-back"></i></a>
             </div>
             <div class="left navbar_title">{{Name}}</div>
             <div class="right">
-            	<a href="#" class="link  buttonAssetEdit"><i class="f7-icons icon-header-edit"></i></a>              	
+            	<a href="#" class="link buttonAssetEdit"><i class="f7-icons icon-header-edit"></i></a>              	
             </div>
         </div>
     </div>
     
-	<div class="toolbar tabbar color-black ">
+	<div class="toolbar tabbar  ">
 	    <div class="toolbar-inner">
 	        <a href="#" class="tab-link active" data-id="asset.status" data-href="">
 	            <span class="tabbar-label"><b>{{@global.LANGUAGE.ASSET_STATUS_MSG07}}</b></span>
@@ -30,39 +30,39 @@
 	    </div>
 	</div>
 
-    <div class="page-content">
+    <div class="page-content with-bottom-button">
 
     	<div class="content-block status_block_top">
     		<div class="row no-gutter">
 			    <div class="col-33">
                     <!-- <img src="resources/images/svg_date.svg" alt=""> -->
-                    <i class="f7-icons icon-other-data color-dealer"></i>
-                    <p class="">{{@global.LANGUAGE.ASSET_STATUS_MSG00}}</p>  
-                    <p class="position_data position_time ">{{Time}}</p>
+                    <i class="f7-icons icon-other-data "></i>
+                    <p class="color-white">{{@global.LANGUAGE.ASSET_STATUS_MSG00}}</p>  
+                    <p class="position_data position_time">{{Time}}</p>
                 </div>                
                 <div class="col-33">
                     <!-- <img src="resources/images/svg_direction.svg" alt=""> -->
-                    <i class="f7-icons icon-other-speed color-dealer"></i>
-                    <p class="">{{@global.LANGUAGE.ASSET_STATUS_MSG02}}</p>  
-                    <p class="position_data position_speed ">{{Speed}}</p>
+                    <i class="f7-icons icon-other-speed "></i>
+                    <p class="color-white">{{@global.LANGUAGE.ASSET_STATUS_MSG02}}</p>  
+                    <p class="position_data position_speed">{{Speed}}</p>
                     
                 </div> 
                 <div class="col-33">
                     <!-- <img src="resources/images/svg_speed.svg" alt=""> -->
-                    <i class="f7-icons icon-other-distance color-dealer"></i>
-                    <p class="">{{@global.LANGUAGE.ASSET_STATUS_MSG10}}</p>  
-                    <p class="position_data position_mileage ">{{Mileage}}</p>                    
+                    <i class="f7-icons icon-other-distance "></i>
+                    <p class="color-white">{{@global.LANGUAGE.ASSET_STATUS_MSG10}}</p>  
+                    <p class="position_data position_mileage">{{Mileage}}</p>                    
                 </div>               
 			</div>
     	</div>
 
-        <div class="list-block no-hairlines-between list-block-selectall">
+        <div class="list-block layout-dark no-hairlines-between list-block-selectall">
             <ul>
                 <li class="bw-li-switch ">
                     <div class="item-content  ">  
                         <div class="item-media"><i class="f7-icons icon-other-geolock position_geolock {{#if GeolockState}} state-1 {{else}} color-gray {{/if}}"></i></div>                             
                         <div class="item-inner">
-                            <div class="item-title open-geolock">{{@global.LANGUAGE.ASSET_STATUS_MSG24}}</div>                       
+                            <div class="item-title open-geolock color-white">{{@global.LANGUAGE.ASSET_STATUS_MSG24}}</div>                       
                             <label class="label-switch no-fastclick">
                                 <input type="checkbox" name="Geolock" {{#if GeolockState}} checked="checked" {{/if}}>
                                 <div class="checkbox"></div>
@@ -74,13 +74,24 @@
                     <div class="item-content ">  
                         <div class="item-media"><i class="f7-icons icon-other-lock position_immob {{#if ImmobState}} state-3 {{else}} color-gray {{/if}}"></i></div>                             
                         <div class="item-inner">
-                            <div class="item-title open-immob">{{@global.LANGUAGE.ASSET_STATUS_MSG25}}</div>                       
+                            <div class="item-title open-immob color-white">{{@global.LANGUAGE.ASSET_STATUS_MSG25}}</div>                       
                             <label class="label-switch no-fastclick">
                                 <input type="checkbox" name="Immobilise" {{#if ImmobState}} checked="checked" {{/if}}>
                                 <div class="checkbox"></div>
                             </label>                        
                         </div>
-
+                    </div>
+                </li>
+                <li class="bw-li-switch ">
+                    <div class="item-content ">  
+                        <div class="item-media"><i class="f7-icons icon-other-door position_lockdoor {{#if LockDoorState}} state-3 {{else}} color-gray {{/if}}"></i></div>                             
+                        <div class="item-inner">
+                            <div class="item-title open-lockdoor color-white">{{@global.LANGUAGE.ASSET_STATUS_MSG26}}</div>                       
+                            <label class="label-switch no-fastclick">
+                                <input type="checkbox" name="LockDoor" {{#if LockDoorState}} checked="checked" {{/if}}>
+                                <div class="checkbox"></div>
+                            </label>                        
+                        </div>
                     </div>
                 </li>
                 
@@ -89,7 +100,7 @@
         </div>
 
 
-		<div class="list-block media-list  status_block_list">                
+		<div class="list-block layout-dark media-list  status_block_list">                
             <ul class="row no-gutter">                
                 <div class="col-100">
                     <li class="item-content with-borders">
@@ -160,7 +171,7 @@
                         </div>
                     </li>
                 </div>
-                {{/if}}  
+                {{/if}}         
                 {{#if Heartrate}}   
                 <div class="col-50">                 
                     <li class="item-content open-heartrate">
@@ -172,7 +183,7 @@
                         </div>
                     </li>
                 </div>
-                {{/if}}                    
+                {{/if}}                       
                 {{#if Temperature}}      
                 <div class="col-50">              
                     <li class="item-content open-temperature">
@@ -226,7 +237,11 @@
             </ul>                
         </div>
     	
-
+        <div class="bottom-button-wrapper bg-color-page">
+            <div class="bottom-button-content">
+                <a href="resources/templates/report.theft.msg.html" class="button button-fill bg-dealer"><i class="f7-icons icon icon-other-report-theft mr-8"></i>{{@global.LANGUAGE.COM_MSG44}}</a>
+            </div>            
+        </div>
     	
 
     </div>
