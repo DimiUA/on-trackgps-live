@@ -105,7 +105,7 @@ $$('#app').append(compiledTemplate());
 // Init App
 const app = new Framework7({
     id: 'com.sinopacific.ontrackgps.live',
-    name: 'OnTrack GPS',
+    name: 'On-Track GPS',
     root: '#app',
     theme: Framework7.device.ios ? 'ios' : 'md',
     view: {
@@ -172,7 +172,7 @@ const app = new Framework7({
                 },
             },
             AppDetails: {
-                name: 'On-TrackGPS-Live-app',
+                name: 'On-Track-GPS-app',
                 code: 7,
                 supportCode: 16,
                 appId: '',
