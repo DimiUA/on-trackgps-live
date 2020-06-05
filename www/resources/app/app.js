@@ -449,7 +449,7 @@ const app = new Framework7({
                 deviceType: localStorage.DEVICE_TYPE,
             };
 
-            self.dialog.progress(LANGUAGE.COM_MSG004,'red');
+            self.dialog.progress(LANGUAGE.COM_MSG004,'custom');
             self.request.promise.get(API_URL.LOGIN, data, 'json')
                 .then(function (result) {
                     if(result.data && result.data.MajorCode === '000') {
